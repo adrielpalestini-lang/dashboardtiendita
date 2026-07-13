@@ -12,6 +12,15 @@ export async function apiFetch(endpoint, options = {}) {
   return res.json();
 }
 
+
+export const getCafeTopProducts = (warehouseId = 1, from, to) => {
+  const params = new URLSearchParams({ warehouse_id: warehouseId });
+  if (from) params.append('from', from);
+  if (to) params.append('to', to);
+  return apiFetch(`/api/reports/cafe-top-products?${params}`);
+};
+
+
 // ---- Auth ----
 export const login = (email, password) =>
   apiFetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });

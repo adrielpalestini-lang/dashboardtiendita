@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
-import { getSalesDaily } from '../api';
+import { getSalesDaily, getCafeTopProducts } from '../api';
+
 
 function toISODate(d) {
   return d.toISOString().split('T')[0];
@@ -15,16 +16,22 @@ export default function SalesReportPage() {
   const [to, setTo] = useState(toISODate(today));
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [topProducts, setTopProducts] = useState([]);
+
 
   const load = async () => {
-    setLoading(true);
-    try {
-      const data = await getSalesDaily(1, from, to);
-      setRows(data);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const [dailyData, topData] = await Promise.all([
+      getSalesDaily(1, from, to),
+      getCafeTopProducts(1, from, to),
+    ]);
+    setRows(dailyData);
+    setTopProducts(topData);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     load();
@@ -106,6 +113,56 @@ export default function SalesReportPage() {
                   </td>
                 </tr>
               ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>☕ Productos de cafetería más vendidos</h3>
+        {loading ? (
+          <p>Cargando...</p>
+        ) : topProducts.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)' }}>No hay ventas de cafetería en este período.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad vendida</th>
+                <th># de tickets</th>
+                <th style={{ textAlign: 'right' }}>Ingresos</th>
+                <th style={{ width: 160 }}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {topProducts.map((p, idx) => {
+                const maxQty = Math.max(...topProducts.map((x) => x.total_qty), 1);
+                return (
+                  <tr key={p.cafe_product_id}>
+                    <td>
+                      {idx === 0 && '🥇 '}
+                      {idx === 1 && '🥈 '}
+                      {idx === 2 && '🥉 '}
+                      ☕ {p.name}
+                    </td>
+                    <td>{p.total_qty}</td>
+                    <td>{p.times_sold}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 'bold' }}>${p.total_revenue.toFixed(2)}</td>
+                    <td>
+                      <div style={{ background: 'var(--gray-light)', borderRadius: 4, height: 10, overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            width: `${(p.total_qty / maxQty) * 100}%`,
+                            background: 'var(--cafe)',
+                            height: '100%',
+                          }}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
