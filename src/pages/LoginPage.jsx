@@ -36,7 +36,7 @@ export default function LoginPage() {
 
         <div className="form-row">
           <label>Correo</label>
-          <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input className="input" type="text" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div className="form-row">
           <label>Contraseña</label>
