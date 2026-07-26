@@ -8,6 +8,7 @@ import ProductsPage from './pages/ProductsPage';
 import CafeProductsPage from './pages/CafeProductsPage';
 import ModifiersPage from './pages/ModifiersPage';
 import PromotionsPage from './pages/PromotionsPage';
+import CafeIngredientsPage from './pages/CafeIngredientsPage';
 
 
 function PrivateRoute({ children }) {
@@ -27,6 +28,7 @@ function AppRoutes() {
       <Route path="/cafe" element={<PrivateRoute><CafeProductsPage /></PrivateRoute>} />
       <Route path="/modificadores" element={<PrivateRoute><ModifiersPage /></PrivateRoute>} />
       <Route path="/promociones" element={<PrivateRoute><PromotionsPage /></PrivateRoute>} />
+      <Route path="/insumos-cafe" element={<PrivateRoute><CafeIngredientsPage /></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -9,6 +9,7 @@ const LINKS = [
   { to: '/cafe', label: '☕ Productos (cafetería)' },
   { to: '/modificadores', label: '🧩 Modificadores' },
   { to: '/promociones', label: '🎁 Promociones' },
+  { to: '/insumos-cafe', label: '🥛 Insumos de cafetería' },
 ];
 
 export default function Sidebar() {

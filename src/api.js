@@ -102,3 +102,24 @@ export const updatePromotion = (id, payload) =>
   apiFetch(`/api/promotions/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
 export const deactivatePromotion = (id) =>
   apiFetch(`/api/promotions/${id}`, { method: 'DELETE' });
+
+// ---- Cafe ingredients (inventory) ----
+export const getCafeIngredients = (warehouseId = 1) =>
+  apiFetch(`/api/cafe/ingredients?warehouse_id=${warehouseId}`);
+export const getCafeIngredientAlerts = (warehouseId = 1) =>
+  apiFetch(`/api/cafe/ingredients/alerts?warehouse_id=${warehouseId}`);
+export const createCafeIngredient = (payload) =>
+  apiFetch('/api/cafe/ingredients', { method: 'POST', body: JSON.stringify(payload) });
+export const updateCafeIngredient = (id, payload) =>
+  apiFetch(`/api/cafe/ingredients/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+export const adjustCafeIngredientStock = (id, payload) =>
+  apiFetch(`/api/cafe/ingredients/${id}/adjust-stock`, { method: 'POST', body: JSON.stringify(payload) });
+
+// ---- Cafe recipes ----
+export const getCafeRecipe = (productId) => apiFetch(`/api/cafe/products/${productId}/recipe`);
+export const addRecipeLine = (productId, payload) =>
+  apiFetch(`/api/cafe/products/${productId}/recipe`, { method: 'POST', body: JSON.stringify(payload) });
+export const updateRecipeLine = (recipeId, payload) =>
+  apiFetch(`/api/cafe/recipe/${recipeId}`, { method: 'PUT', body: JSON.stringify(payload) });
+export const deleteRecipeLine = (recipeId) =>
+  apiFetch(`/api/cafe/recipe/${recipeId}`, { method: 'DELETE' });
