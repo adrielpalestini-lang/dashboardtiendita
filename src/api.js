@@ -91,3 +91,14 @@ export const linkModifierGroup = (productId, groupId, sortOrder) =>
   });
 export const unlinkModifierGroup = (productId, groupId) =>
   apiFetch(`/api/cafe/products/${productId}/modifier-groups/${groupId}`, { method: 'DELETE' });
+
+
+// ---- Promotions ----
+export const getPromotions = (orgId = 1) => apiFetch(`/api/promotions?org_id=${orgId}`);
+export const getPromotionDetail = (id) => apiFetch(`/api/promotions/${id}`);
+export const createPromotion = (payload) =>
+  apiFetch('/api/promotions', { method: 'POST', body: JSON.stringify(payload) });
+export const updatePromotion = (id, payload) =>
+  apiFetch(`/api/promotions/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+export const deactivatePromotion = (id) =>
+  apiFetch(`/api/promotions/${id}`, { method: 'DELETE' });

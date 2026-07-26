@@ -8,6 +8,7 @@ const LINKS = [
   { to: '/productos', label: '📦 Productos (tienda)' },
   { to: '/cafe', label: '☕ Productos (cafetería)' },
   { to: '/modificadores', label: '🧩 Modificadores' },
+  { to: '/promociones', label: '🎁 Promociones' },
 ];
 
 export default function Sidebar() {

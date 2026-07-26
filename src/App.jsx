@@ -7,6 +7,8 @@ import CashCutsPage from './pages/CashCutsPage';
 import ProductsPage from './pages/ProductsPage';
 import CafeProductsPage from './pages/CafeProductsPage';
 import ModifiersPage from './pages/ModifiersPage';
+import PromotionsPage from './pages/PromotionsPage';
+
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -24,6 +26,7 @@ function AppRoutes() {
       <Route path="/productos" element={<PrivateRoute><ProductsPage /></PrivateRoute>} />
       <Route path="/cafe" element={<PrivateRoute><CafeProductsPage /></PrivateRoute>} />
       <Route path="/modificadores" element={<PrivateRoute><ModifiersPage /></PrivateRoute>} />
+      <Route path="/promociones" element={<PrivateRoute><PromotionsPage /></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
