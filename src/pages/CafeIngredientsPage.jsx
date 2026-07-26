@@ -43,7 +43,6 @@ export default function CafeIngredientsPage() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     loadIngredients();
     getCafeProductsList(2).then(setCafeProducts);
