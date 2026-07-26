@@ -123,3 +123,13 @@ export const updateRecipeLine = (recipeId, payload) =>
   apiFetch(`/api/cafe/recipe/${recipeId}`, { method: 'PUT', body: JSON.stringify(payload) });
 export const deleteRecipeLine = (recipeId) =>
   apiFetch(`/api/cafe/recipe/${recipeId}`, { method: 'DELETE' });
+
+
+export const toggleIngredientActive = (id, isActive) =>
+  apiFetch(`/api/cafe/ingredients/${id}/toggle-active`, {
+    method: 'PUT',
+    body: JSON.stringify({ is_ingredient_active: isActive }),
+  });
+
+export const getCafeIngredientsAll = (warehouseId = 1) =>
+  apiFetch(`/api/cafe/ingredients?warehouse_id=${warehouseId}&include_hidden=true`);

@@ -12,6 +12,8 @@ import {
 } from '../api';
 import { useAuth } from '../context/AuthContext';
 
+import { toggleIngredientActive, getCafeIngredientsAll } from '../api';
+
 const UNIT_TYPES = ['ml', 'l', 'g', 'kg', 'pieza'];
 const emptyIngredient = { id: null, sku: '', name: '', unit_type: 'ml', stock_alert_limit: 500, initial_stock: '' };
 
@@ -28,25 +30,35 @@ export default function CafeIngredientsPage() {
   const [adjustQty, setAdjustQty] = useState('');
   const [adjustNotes, setAdjustNotes] = useState('');
 
+  const [showHidden, setShowHidden] = useState(false);
+
   // Recetas
   const [cafeProducts, setCafeProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [recipe, setRecipe] = useState([]);
   const [newLine, setNewLine] = useState({ ingredient_product_id: '', quantity: '', unit: 'ml' });
 
-  const loadIngredients = async () => {
+
+  const handleToggleActive = async (ingredient) => {
+  await toggleIngredientActive(ingredient.id, !ingredient.is_ingredient_active);
+  loadIngredients();
+};
+
+
+    const loadIngredients = async () => {
     setLoading(true);
     try {
-      const res = await getCafeIngredients(1);
-      setIngredients(res);
+        const res = showHidden ? await getCafeIngredientsAll(1) : await getCafeIngredients(1);
+        setIngredients(res);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
-  useEffect(() => {
+    };
+
+    useEffect(() => {
     loadIngredients();
-    getCafeProductsList(2).then(setCafeProducts);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showHidden]);
 
   const handleSaveIngredient = async () => {
     setSaving(true);
@@ -141,7 +153,10 @@ export default function CafeIngredientsPage() {
       {tab === 'insumos' && (
         <>
           <div className="flex-between" style={{ marginBottom: 10 }}>
-            <div />
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
+                Mostrar insumos ocultos
+            </label>
             <button className="btn btn-primary" onClick={() => setForm({ ...emptyIngredient })}>+ Nuevo insumo</button>
           </div>
 
@@ -168,8 +183,20 @@ export default function CafeIngredientsPage() {
                   {ingredients
                     .sort((a, b) => (a.needs_reorder === b.needs_reorder ? 0 : a.needs_reorder ? -1 : 1))
                     .map((i) => (
-                      <tr key={i.id} style={i.needs_reorder ? { background: 'var(--danger-soft)' } : undefined}>
-                        <td style={{ fontWeight: 600 }}>{i.name}</td>
+                      <tr
+                            key={i.id}
+                            style={
+                                !i.is_ingredient_active
+                                ? { opacity: 0.5 }
+                                : i.needs_reorder
+                                ? { background: 'var(--danger-soft)' }
+                                : undefined
+                            }
+                            >
+                        <td style={{ fontWeight: 600 }}>
+                        {i.name}
+                        {!i.is_ingredient_active && <span className="badge badge-gray" style={{ marginLeft: 6 }}>Oculto</span>}
+                        </td>
                         <td>{i.unit_type}</td>
                         <td>{Number(i.current_stock).toLocaleString()}</td>
                         <td>{i.stock_alert_limit}</td>
@@ -180,19 +207,26 @@ export default function CafeIngredientsPage() {
                             <span className="badge badge-green">OK</span>
                           )}
                         </td>
-                        <td style={{ display: 'flex', gap: 6 }}>
-                          <button
+                      <td style={{ display: 'flex', gap: 6 }}>
+                        <button
                             className="btn btn-outline btn-small"
                             onClick={() => setForm({
-                              id: i.id, sku: i.sku, name: i.name, unit_type: i.unit_type,
-                              stock_alert_limit: i.stock_alert_limit, initial_stock: '',
+                            id: i.id, sku: i.sku, name: i.name, unit_type: i.unit_type,
+                            stock_alert_limit: i.stock_alert_limit, initial_stock: '',
                             })}
-                          >
+                        >
                             Editar
-                          </button>
-                          <button className="btn btn-green btn-small" onClick={() => setAdjustTarget(i)}>
+                        </button>
+                        <button className="btn btn-green btn-small" onClick={() => setAdjustTarget(i)}>
                             Ajustar stock
-                          </button>
+                        </button>
+                        <button
+                            className="btn btn-small"
+                            style={{ background: i.is_ingredient_active ? 'var(--danger-soft)' : 'var(--gray-light)', color: i.is_ingredient_active ? 'var(--danger)' : 'var(--text)' }}
+                            onClick={() => handleToggleActive(i)}
+                        >
+                            {i.is_ingredient_active ? 'Ocultar' : 'Reactivar'}
+                        </button>
                         </td>
                       </tr>
                     ))}
