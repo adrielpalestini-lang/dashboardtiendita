@@ -60,6 +60,10 @@ export default function CafeIngredientsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showHidden]);
 
+    useEffect(() => {
+    getCafeProductsList(2).then(setCafeProducts);
+    }, []);
+
   const handleSaveIngredient = async () => {
     setSaving(true);
     try {
