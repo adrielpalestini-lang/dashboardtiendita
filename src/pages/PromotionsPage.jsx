@@ -52,15 +52,18 @@ export default function PromotionsPage() {
   const [storeProducts, setStoreProducts] = useState([]);
   const [cafeProducts, setCafeProducts] = useState([]);
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const res = await getPromotions(1);
-      setPromotions(res);
-    } finally {
-      setLoading(false);
-    }
-  };
+const load = async () => {
+  setLoading(true);
+  try {
+    const [tienda, cafe] = await Promise.all([getPromotions(1), getPromotions(2)]);
+    const merged = [...tienda, ...cafe].filter(
+      (p, idx, arr) => arr.findIndex((x) => x.id === p.id) === idx
+    );
+    setPromotions(merged);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     load();
