@@ -51,6 +51,17 @@ export const getSalesDaily = (warehouseId = 1, from, to) => {
   if (to) params.append('to', to);
   return apiFetch(`/api/reports/sales-daily?${params}`);
 };
+
+
+export async function getCashFundSummary(warehouseId, from, to) {
+  const params = new URLSearchParams({ warehouse_id: warehouseId });
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  const res = await fetch(`${API_URL}/reports/cash-fund-summary?${params}`);
+  if (!res.ok) throw new Error('Error al cargar el resumen de fondo de caja');
+  return res.json();
+}
+
 export const getSalesLive = (warehouseId = 1, minutes = 240) =>
   apiFetch(`/api/reports/sales-live?warehouse_id=${warehouseId}&minutes=${minutes}`);
 
