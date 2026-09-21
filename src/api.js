@@ -57,7 +57,7 @@ export async function getCashFundSummary(warehouseId, from, to) {
   const params = new URLSearchParams({ warehouse_id: warehouseId });
   if (from) params.set('from', from);
   if (to) params.set('to', to);
-  const res = await fetch(`${API_URL}/reports/cash-fund-summary?${params}`);
+  const res = await fetch(`${API_URL}/api/reports/cash-fund-summary?${params}`);
   if (!res.ok) throw new Error('Error al cargar el resumen de fondo de caja');
   return res.json();
 }
