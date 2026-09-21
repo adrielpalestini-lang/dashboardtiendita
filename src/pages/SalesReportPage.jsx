@@ -19,15 +19,17 @@ export default function SalesReportPage() {
   const [topProducts, setTopProducts] = useState([]);
 
 
-  const load = async () => {
+const load = async () => {
   setLoading(true);
   try {
-    const [dailyData, topData] = await Promise.all([
+    const [dailyData, topData, fundData] = await Promise.all([
       getSalesDaily(1, from, to),
       getCafeTopProducts(1, from, to),
+      getCashFundSummary(1, from, to),
     ]);
     setRows(dailyData);
     setTopProducts(topData);
+    setFundSummary(fundData);
   } finally {
     setLoading(false);
   }
@@ -73,6 +75,37 @@ export default function SalesReportPage() {
           <div className="stat-value" style={{ color: 'var(--cafe)' }}>${totalCafe.toFixed(2)}</div>
         </div>
       </div>
+
+
+      <div className="stat-card">
+  <div className="stat-label">Descuentos otorgados</div>
+  <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
+    ${rows.reduce((a, r) => a + r.total_descuentos, 0).toFixed(2)}
+  </div>
+</div>
+<div className="stat-card">
+  <div className="stat-label">Cancelaciones</div>
+  <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
+    ${rows.reduce((a, r) => a + r.total_cancelaciones, 0).toFixed(2)}
+    <span style={{ fontSize: '0.7rem', display: 'block' }}>
+      {rows.reduce((a, r) => a + r.cancelled_count, 0)} ventas
+    </span>
+  </div>
+</div>
+<div className="stat-card">
+  <div className="stat-label">Devoluciones parciales</div>
+  <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
+    ${rows.reduce((a, r) => a + r.total_devoluciones, 0).toFixed(2)}
+  </div>
+</div>
+<div className="stat-card">
+  <div className="stat-label">Fondo de caja aportado</div>
+  <div className="stat-value">${fundSummary?.total_fondo?.toFixed(2) ?? '0.00'}</div>
+  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+    en {fundSummary?.cuts_count ?? 0} corte(s)
+  </div>
+</div>
+
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Ventas por día</h3>
