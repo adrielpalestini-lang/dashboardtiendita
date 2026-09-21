@@ -17,7 +17,7 @@ export async function getSalesMatrix(warehouseId, orgId, from, to) {
   if (orgId) params.set('org_id', orgId);
   if (from) params.set('from', from);
   if (to) params.set('to', to);
-  const res = await fetch(`${API_URL}/reports/sales-matrix?${params}`);
+  const res = await fetch(`${API_URL}/api/reports/sales-matrix?${params}`);
   if (!res.ok) throw new Error('Error al cargar la matriz de ventas');
   return res.json();
 }
