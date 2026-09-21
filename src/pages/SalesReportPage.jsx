@@ -77,34 +77,7 @@ const load = async () => {
       </div>
 
 
-      <div className="stat-card">
-  <div className="stat-label">Descuentos otorgados</div>
-  <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
-    ${rows.reduce((a, r) => a + r.total_descuentos, 0).toFixed(2)}
-  </div>
-</div>
-<div className="stat-card">
-  <div className="stat-label">Cancelaciones</div>
-  <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
-    ${rows.reduce((a, r) => a + r.total_cancelaciones, 0).toFixed(2)}
-    <span style={{ fontSize: '0.7rem', display: 'block' }}>
-      {rows.reduce((a, r) => a + r.cancelled_count, 0)} ventas
-    </span>
-  </div>
-</div>
-<div className="stat-card">
-  <div className="stat-label">Devoluciones parciales</div>
-  <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
-    ${rows.reduce((a, r) => a + r.total_devoluciones, 0).toFixed(2)}
-  </div>
-</div>
-<div className="stat-card">
-  <div className="stat-label">Fondo de caja aportado</div>
-  <div className="stat-value"> ${rows.reduce((a, r) => a + r.total_fondo, 0).toFixed(2)}</div>
-  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-    en {rows.reduce((a, r) => a + r.cuts_count, 0)} corte(s)
-  </div>
-</div>
+      
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Ventas por día</h3>
