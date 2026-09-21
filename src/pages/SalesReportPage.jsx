@@ -100,9 +100,9 @@ const load = async () => {
 </div>
 <div className="stat-card">
   <div className="stat-label">Fondo de caja aportado</div>
-  <div className="stat-value">${fundSummary?.total_fondo?.toFixed(2) ?? '0.00'}</div>
+  <div className="stat-value"> ${rows.reduce((a, r) => a + r.total_fondo, 0).toFixed(2)}</div>
   <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-    en {fundSummary?.cuts_count ?? 0} corte(s)
+    en {rows.reduce((a, r) => a + r.cuts_count, 0)} corte(s)
   </div>
 </div>
 
