@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
-import { getSalesDaily, getCafeTopProducts } from '../api';
+import { getSalesDaily, getCafeTopProducts, getCashFundSummary } from '../api';
 
 
 function toISODate(d) {
@@ -17,23 +17,23 @@ export default function SalesReportPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [topProducts, setTopProducts] = useState([]);
+  const [fundSummary, setFundSummary] = useState(null);
 
-
-const load = async () => {
-  setLoading(true);
-  try {
-    const [dailyData, topData, fundData] = await Promise.all([
-      getSalesDaily(1, from, to),
-      getCafeTopProducts(1, from, to),
-      getCashFundSummary(1, from, to),
-    ]);
-    setRows(dailyData);
-    setTopProducts(topData);
-    setFundSummary(fundData);
-  } finally {
-    setLoading(false);
-  }
-};
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [dailyData, topData, fundData] = await Promise.all([
+        getSalesDaily(1, from, to),
+        getCafeTopProducts(1, from, to),
+        getCashFundSummary(1, from, to),
+      ]);
+      setRows(dailyData);
+      setTopProducts(topData);
+      setFundSummary(fundData);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     load();
@@ -76,36 +76,36 @@ const load = async () => {
         </div>
       </div>
 
-
-      <div className="stat-card">
-  <div className="stat-label">Descuentos otorgados</div>
-  <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
-    ${rows.reduce((a, r) => a + r.total_descuentos, 0).toFixed(2)}
-  </div>
-</div>
-<div className="stat-card">
-  <div className="stat-label">Cancelaciones</div>
-  <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
-    ${rows.reduce((a, r) => a + r.total_cancelaciones, 0).toFixed(2)}
-    <span style={{ fontSize: '0.7rem', display: 'block' }}>
-      {rows.reduce((a, r) => a + r.cancelled_count, 0)} ventas
-    </span>
-  </div>
-</div>
-<div className="stat-card">
-  <div className="stat-label">Devoluciones parciales</div>
-  <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
-    ${rows.reduce((a, r) => a + r.total_devoluciones, 0).toFixed(2)}
-  </div>
-</div>
-<div className="stat-card">
-  <div className="stat-label">Fondo de caja aportado</div>
-  <div className="stat-value">${fundSummary?.total_fondo?.toFixed(2) ?? '0.00'}</div>
-  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-    en {fundSummary?.cuts_count ?? 0} corte(s)
-  </div>
-</div>
-
+      <div className="card-grid">
+        <div className="stat-card">
+          <div className="stat-label">Descuentos otorgados</div>
+          <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
+            ${rows.reduce((a, r) => a + r.total_descuentos, 0).toFixed(2)}
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Cancelaciones</div>
+          <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
+            ${rows.reduce((a, r) => a + r.total_cancelaciones, 0).toFixed(2)}
+            <span style={{ fontSize: '0.7rem', display: 'block' }}>
+              {rows.reduce((a, r) => a + r.cancelled_count, 0)} ventas
+            </span>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Devoluciones parciales</div>
+          <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
+            ${rows.reduce((a, r) => a + r.total_devoluciones, 0).toFixed(2)}
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Fondo de caja aportado</div>
+          <div className="stat-value">${fundSummary?.total_fondo?.toFixed(2) ?? '0.00'}</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+            en {fundSummary?.cuts_count ?? 0} corte(s)
+          </div>
+        </div>
+      </div>
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Ventas por día</h3>
@@ -121,8 +121,11 @@ const load = async () => {
                 <th># Ventas</th>
                 <th>Tienda</th>
                 <th>Cafetería</th>
+                <th>Descuentos</th>
+                <th>Cancelaciones</th>
+                <th>Devoluciones</th>
                 <th>Total</th>
-                <th style={{ width: 200 }}></th>
+                <th style={{ width: 160 }}></th>
               </tr>
             </thead>
             <tbody>
@@ -132,6 +135,9 @@ const load = async () => {
                   <td>{r.sale_count}</td>
                   <td>${r.total_tienda.toFixed(2)}</td>
                   <td>${r.total_cafe.toFixed(2)}</td>
+                  <td style={{ color: 'var(--danger, #c0392b)' }}>${r.total_descuentos.toFixed(2)}</td>
+                  <td style={{ color: 'var(--danger, #c0392b)' }}>${r.total_cancelaciones.toFixed(2)}</td>
+                  <td style={{ color: 'var(--danger, #c0392b)' }}>${r.total_devoluciones.toFixed(2)}</td>
                   <td style={{ fontWeight: 'bold' }}>${r.total.toFixed(2)}</td>
                   <td>
                     <div style={{ background: 'var(--gray-light)', borderRadius: 4, height: 10, overflow: 'hidden' }}>
