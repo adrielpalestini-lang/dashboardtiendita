@@ -17,7 +17,7 @@ export default function SalesReportPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [topProducts, setTopProducts] = useState([]);
-  const [fundSummary, setFundSummary] = useState(null);
+  const [fundSummary, setFundSummary] = useState(null); // 👈 esto era lo que faltaba
 
   const load = async () => {
     setLoading(true);
