@@ -10,6 +10,7 @@ const LINKS = [
   { to: '/modificadores', label: '🧩 Modificadores' },
   { to: '/promociones', label: '🎁 Promociones' },
   { to: '/insumos-cafe', label: '🥛 Insumos de cafetería' },
+  { to: '/matriz-horarios', label: '🕒 Matriz de horarios' },
 ];
 
 export default function Sidebar() {

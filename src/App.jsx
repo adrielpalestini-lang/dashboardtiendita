@@ -9,6 +9,7 @@ import CafeProductsPage from './pages/CafeProductsPage';
 import ModifiersPage from './pages/ModifiersPage';
 import PromotionsPage from './pages/PromotionsPage';
 import CafeIngredientsPage from './pages/CafeIngredientsPage';
+import SalesMatrixPage from './pages/SalesMatrixPage';
 
 
 function PrivateRoute({ children }) {
@@ -30,6 +31,7 @@ function AppRoutes() {
       <Route path="/promociones" element={<PrivateRoute><PromotionsPage /></PrivateRoute>} />
       <Route path="/insumos-cafe" element={<PrivateRoute><CafeIngredientsPage /></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/matriz-horarios" element={<SalesMatrixPage />} />
     </Routes>
   );
 }
