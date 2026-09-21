@@ -39,11 +39,23 @@ export default function CashCutsPage() {
     }
   };
 
+  // Métodos de pago (además de efectivo) presentes en los cortes de esta página.
+  // Dinámico a propósito: si mañana agregan "Transferencia" en payment_methods,
+  // aparece solo como columna, sin tocar este componente.
+  const paymentMethods = [...new Set(
+    data.cuts.flatMap((c) => (c.payments_breakdown || []).map((m) => m.method_name))
+  )].filter((name) => !name.toLowerCase().includes('efectivo'));
+
+  const getMethodTotal = (cut, methodName) => {
+    const found = (cut.payments_breakdown || []).find((m) => m.method_name === methodName);
+    return found ? Number(found.total) : 0;
+  };
+
   return (
     <Layout>
       <h1 className="page-title">Cortes de caja</h1>
 
-      <div className="card">
+      <div className="card" style={{ overflowX: 'auto' }}>
         {loading ? (
           <p>Cargando...</p>
         ) : data.cuts.length === 0 ? (
@@ -55,7 +67,11 @@ export default function CashCutsPage() {
                 <tr>
                   <th>Fecha</th>
                   <th>Cajero</th>
+                  <th>Fondo de caja</th>
                   <th>Total ventas</th>
+                  {paymentMethods.map((m) => (
+                    <th key={m}>{m}</th>
+                  ))}
                   <th>Efectivo esperado</th>
                   <th>Efectivo contado</th>
                   <th>Diferencia</th>
@@ -68,7 +84,11 @@ export default function CashCutsPage() {
                     <tr style={{ cursor: 'pointer' }} onClick={() => toggleExpand(c.id)}>
                       <td>{new Date(c.period_end).toLocaleString('es-MX')}</td>
                       <td>{c.user_name || '—'}</td>
+                      <td>${Number(c.opening_fund || 0).toFixed(2)}</td>
                       <td>${Number(c.sales_total).toFixed(2)}</td>
+                      {paymentMethods.map((m) => (
+                        <td key={m}>${getMethodTotal(c, m).toFixed(2)}</td>
+                      ))}
                       <td>${Number(c.expected_cash).toFixed(2)}</td>
                       <td>${Number(c.counted_cash).toFixed(2)}</td>
                       <td>
@@ -88,7 +108,7 @@ export default function CashCutsPage() {
                     </tr>
                     {expandedId === c.id && (
                       <tr>
-                        <td colSpan={7} style={{ background: 'var(--gray-lighter)' }}>
+                        <td colSpan={8 + paymentMethods.length} style={{ background: 'var(--gray-lighter)' }}>
                           {loadingDetail ? (
                             <p>Cargando detalle...</p>
                           ) : detail ? (
