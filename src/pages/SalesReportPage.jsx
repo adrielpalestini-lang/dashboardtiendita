@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
-import { getSalesDaily, getCafeTopProducts } from '../api';
+import { getSalesDaily, getCafeTopProducts,getCashFundSummary } from '../api';
 
 
 function toISODate(d) {
