@@ -10,7 +10,7 @@ import ModifiersPage from './pages/ModifiersPage';
 import PromotionsPage from './pages/PromotionsPage';
 import CafeIngredientsPage from './pages/CafeIngredientsPage';
 import SalesMatrixPage from './pages/SalesMatrixPage';
-
+import MonitorVentasPage from './pages/MonitorVentasPage';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -32,6 +32,7 @@ function AppRoutes() {
       <Route path="/insumos-cafe" element={<PrivateRoute><CafeIngredientsPage /></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/matriz-horarios" element={<SalesMatrixPage />} />
+      <Route path="/monitor-ventas" element={<MonitorVentasPage />} />
     </Routes>
   );
 }

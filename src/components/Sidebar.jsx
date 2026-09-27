@@ -11,6 +11,7 @@ const LINKS = [
   { to: '/promociones', label: '🎁 Promociones' },
   { to: '/insumos-cafe', label: '🥛 Insumos de cafetería' },
   { to: '/matriz-horarios', label: '🕒 Matriz de horarios' },
+  { to: '/monitor-ventas', label: '🔎 Monitor de ventas' },
 ];
 
 export default function Sidebar() {
