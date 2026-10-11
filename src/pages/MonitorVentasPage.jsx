@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
-import { getUsersList, getCartRemovals, getCartRemovalsByCashier } from '../api';
-
+import { getUsersList, getCartRemovals } from '../api';
+import { getUsersList, getCartRemovals } from '../api';
+import { getCartRemovalsByCashier } from '../utils/monitorApi';
 function toISODate(d) {
   return d.toISOString().split('T')[0];
 }
