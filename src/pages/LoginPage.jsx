@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../api';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, isAdminRole } from '../context/AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,6 +17,12 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await login(email, password);
+      // El login es compartido con el punto de venta: los cajeros sí pueden entrar allá,
+      // pero este dashboard es solo para administradores.
+      if (!isAdminRole(res.user?.role)) {
+        setError('Este panel es solo para administradores.');
+        return;
+      }
       loginUser({ ...res.user, token: res.token });
       navigate('/');
     } catch (err) {

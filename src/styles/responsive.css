@@ -1,0 +1,84 @@
+/* Modo móvil del menú lateral.
+   Importar DESPUÉS de tu CSS principal (ya lo hace Layout.jsx). */
+
+.menu-toggle,
+.menu-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    display: block !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 64px 14px 24px !important; /* espacio arriba para el botón ☰ */
+  }
+
+  /* El menú pasa a ser un panel fuera de pantalla */
+  .sidebar {
+    position: fixed !important; /* Sidebar.jsx trae position:relative inline */
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 260px !important;
+    max-width: 82vw;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    z-index: 1000;
+  }
+  .menu-open .sidebar {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 42px;
+    height: 42px;
+    z-index: 1100;
+    border: 0;
+    border-radius: 10px;
+    background: #1e3799;
+    color: #fff;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Con el menú abierto, el botón (✕) pasa al lado del panel para no tapar el título */
+  .menu-open .menu-toggle {
+    left: calc(min(260px, 82vw) + 10px);
+  }
+
+  .menu-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 900;
+  }
+  .menu-open .menu-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Las tablas anchas se desplazan dentro de su tarjeta en vez de romper la página */
+  .card {
+    overflow-x: auto;
+  }
+}

@@ -1,11 +1,19 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import '../utils/authFetch';
 
 const AuthContext = createContext(null);
 
+export const isAdminRole = (r) =>
+  ['admin', 'administrador', 'administrator'].includes(String(r || '').trim().toLowerCase());
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('dashboard_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('dashboard_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
 
   const loginUser = (userData) => {
@@ -18,8 +26,17 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  // authFetch avisa cuando el servidor rechaza el token (vencido o inválido)
+  useEffect(() => {
+    const onExpired = () => setUser(null);
+    window.addEventListener('auth:expired', onExpired);
+    return () => window.removeEventListener('auth:expired', onExpired);
+  }, []);
+
+  const isAdmin = !!user?.token && isAdminRole(user?.role);
+
   return (
-    <AuthContext.Provider value={{ user, loginUser, logout }}>
+    <AuthContext.Provider value={{ user, loginUser, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
