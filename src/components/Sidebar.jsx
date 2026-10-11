@@ -12,6 +12,8 @@ const LINKS = [
   { to: '/insumos-cafe', label: '🥛 Insumos de cafetería' },
   { to: '/matriz-horarios', label: '🕒 Matriz de horarios' },
   { to: '/monitor-ventas', label: '🔎 Monitor de ventas' },
+   { to: '/usuarios', label: '👥 Usuarios' },
+  { to: '/organizaciones', label: '🏢 Organizaciones' },
 ];
 
 export default function Sidebar() {

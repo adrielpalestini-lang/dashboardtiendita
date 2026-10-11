@@ -11,6 +11,8 @@ import PromotionsPage from './pages/PromotionsPage';
 import CafeIngredientsPage from './pages/CafeIngredientsPage';
 import SalesMatrixPage from './pages/SalesMatrixPage';
 import MonitorVentasPage from './pages/MonitorVentasPage';
+import UsersPage from './pages/UsersPage';
+import OrganizationsPage from './pages/OrganizationsPage';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -33,6 +35,8 @@ function AppRoutes() {
       <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/matriz-horarios" element={<SalesMatrixPage />} />
       <Route path="/monitor-ventas" element={<MonitorVentasPage />} />
+      <Route path="/usuarios" element={<UsersPage />} />
+<Route path="/organizaciones" element={<OrganizationsPage />} />
     </Routes>
   );
 }
