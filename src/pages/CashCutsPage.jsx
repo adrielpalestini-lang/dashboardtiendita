@@ -1,6 +1,9 @@
 import { useEffect, useState, Fragment } from 'react';
 import Layout from '../components/Layout';
 import { getCashCutsHistory, getCashCutSales } from '../api';
+import { fmtDateTime, fmtTime } from '../utils/dates';
+
+const money = (v) => `$${Number(v || 0).toFixed(2)}`;
 
 export default function CashCutsPage() {
   const [data, setData] = useState({ cuts: [], page: 1, totalPages: 1 });
@@ -30,6 +33,7 @@ export default function CashCutsPage() {
       return;
     }
     setExpandedId(cutId);
+    setDetail(null);
     setLoadingDetail(true);
     try {
       const res = await getCashCutSales(cutId);
@@ -51,6 +55,13 @@ export default function CashCutsPage() {
     return found ? Number(found.total) : 0;
   };
 
+  // Ventas olvidadas que se registraron al cerrar el corte (suman en "Total ventas")
+  const getManualTotal = (cut) =>
+    (cut.manual_adjustments || []).reduce((a, x) => a + Number(x.amount || 0), 0);
+
+  // Fijas: Periodo, Cajero, Fondo, Total ventas, Devoluciones, Esperado, Contado, Diferencia, flecha
+  const FIXED_COLS = 9;
+
   return (
     <Layout>
       <h1 className="page-title">Cortes de caja</h1>
@@ -65,10 +76,11 @@ export default function CashCutsPage() {
             <table>
               <thead>
                 <tr>
-                  <th>Fecha</th>
+                  <th>Cierre del corte</th>
                   <th>Cajero</th>
                   <th>Fondo de caja</th>
                   <th>Total ventas</th>
+                  <th>Devoluciones</th>
                   {paymentMethods.map((m) => (
                     <th key={m}>{m}</th>
                   ))}
@@ -79,74 +91,104 @@ export default function CashCutsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.cuts.map((c) => (
-                  <Fragment key={c.id}>
-                    <tr style={{ cursor: 'pointer' }} onClick={() => toggleExpand(c.id)}>
-                      <td>{new Date(c.period_end).toLocaleString('es-MX')}</td>
-                      <td>{c.user_name || '—'}</td>
-                      <td>${Number(c.opening_fund || 0).toFixed(2)}</td>
-                      <td>${Number(c.sales_total).toFixed(2)}</td>
-                      {paymentMethods.map((m) => (
-                        <td key={m}>${getMethodTotal(c, m).toFixed(2)}</td>
-                      ))}
-                      <td>${Number(c.expected_cash).toFixed(2)}</td>
-                      <td>${Number(c.counted_cash).toFixed(2)}</td>
-                      <td>
-                        <span
-                          className={
-                            Number(c.difference) === 0
-                              ? 'badge badge-gray'
-                              : Number(c.difference) > 0
-                              ? 'badge badge-green'
-                              : 'badge badge-red'
-                          }
-                        >
-                          {Number(c.difference) >= 0 ? '+' : ''}${Number(c.difference).toFixed(2)}
-                        </span>
-                      </td>
-                      <td>{expandedId === c.id ? '▲' : '▼'}</td>
-                    </tr>
-                    {expandedId === c.id && (
-                      <tr>
-                        <td colSpan={8 + paymentMethods.length} style={{ background: 'var(--gray-lighter)' }}>
-                          {loadingDetail ? (
-                            <p>Cargando detalle...</p>
-                          ) : detail ? (
-                            <div style={{ padding: '10px 0' }}>
-                              <p style={{ fontWeight: 'bold', marginBottom: 8 }}>
-                                Ventas incluidas en este corte ({detail.sales.length})
-                              </p>
-                              <table>
-                                <thead>
-                                  <tr>
-                                    <th>Folio</th>
-                                    <th>Origen</th>
-                                    <th>Hora</th>
-                                    <th>Métodos</th>
-                                    <th style={{ textAlign: 'right' }}>Total</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {detail.sales.map((s) => (
-                                    <tr key={s.id}>
-                                      <td>#{s.id}</td>
-                                      <td>{s.org_name}</td>
-                                      <td>{new Date(s.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
-                                      <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                                        {(s.payments || []).map((p) => `${p.method_name}: $${Number(p.amount).toFixed(2)}`).join(' · ')}
-                                      </td>
-                                      <td style={{ textAlign: 'right' }}>${Number(s.total).toFixed(2)}</td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          ) : null}
+                {data.cuts.map((c) => {
+                  const manual = getManualTotal(c);
+                  return (
+                    <Fragment key={c.id}>
+                      <tr style={{ cursor: 'pointer' }} onClick={() => toggleExpand(c.id)}>
+                        <td>
+                          <div>{fmtDateTime(c.period_end)}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                            desde {fmtDateTime(c.period_start)}
+                          </div>
                         </td>
+                        <td>{c.user_name || '—'}</td>
+                        <td>{money(c.opening_fund)}</td>
+                        <td>
+                          {money(c.sales_total)}
+                          {manual > 0 && (
+                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                              incl. {money(manual)} olvidadas
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ color: Number(c.returns_total) > 0 ? 'var(--danger, #c0392b)' : undefined }}>
+                          {money(c.returns_total)}
+                        </td>
+                        {paymentMethods.map((m) => (
+                          <td key={m}>{money(getMethodTotal(c, m))}</td>
+                        ))}
+                        <td>{money(c.expected_cash)}</td>
+                        <td>{money(c.counted_cash)}</td>
+                        <td>
+                          <span
+                            className={
+                              Number(c.difference) === 0
+                                ? 'badge badge-gray'
+                                : Number(c.difference) > 0
+                                ? 'badge badge-green'
+                                : 'badge badge-red'
+                            }
+                          >
+                            {Number(c.difference) >= 0 ? '+' : '-'}${Math.abs(Number(c.difference)).toFixed(2)}
+                          </span>
+                        </td>
+                        <td>{expandedId === c.id ? '▲' : '▼'}</td>
                       </tr>
-                    )}
-                  </Fragment>
-                ))}
+                      {expandedId === c.id && (
+                        <tr>
+                          <td colSpan={FIXED_COLS + paymentMethods.length} style={{ background: 'var(--gray-lighter)' }}>
+                            {loadingDetail ? (
+                              <p>Cargando detalle...</p>
+                            ) : detail ? (
+                              <div style={{ padding: '10px 0' }}>
+                                <p style={{ fontWeight: 'bold', marginBottom: 8 }}>
+                                  Ventas incluidas en este corte ({detail.sales.length})
+                                </p>
+                                <table>
+                                  <thead>
+                                    <tr>
+                                      <th>Folio</th>
+                                      <th>Origen</th>
+                                      <th>Hora</th>
+                                      <th>Métodos</th>
+                                      <th style={{ textAlign: 'right' }}>Total</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {detail.sales.map((s) => (
+                                      <tr key={s.id} style={s.is_cancelled ? { opacity: 0.55 } : undefined}>
+                                        <td>
+                                          #{s.id}
+                                          {s.is_cancelled && (
+                                            <span className="badge badge-red" style={{ marginLeft: 6 }}>Cancelada</span>
+                                          )}
+                                        </td>
+                                        <td>{s.org_name}</td>
+                                        <td>{fmtTime(s.created_at)}</td>
+                                        <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                          {(s.payments || []).map((p) => `${p.method_name}: $${Number(p.amount).toFixed(2)}`).join(' · ')}
+                                        </td>
+                                        <td
+                                          style={{
+                                            textAlign: 'right',
+                                            textDecoration: s.is_cancelled ? 'line-through' : undefined,
+                                          }}
+                                        >
+                                          {money(s.total)}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            ) : null}
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
 

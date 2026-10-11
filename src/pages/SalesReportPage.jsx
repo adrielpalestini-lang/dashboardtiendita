@@ -1,25 +1,20 @@
 import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import { getSalesDaily, getCafeTopProducts, getCashFundSummary } from '../api';
-
-
-function toISODate(d) {
-  return d.toISOString().split('T')[0];
-}
+import { todayMX, daysAgoMX, fmtDay } from '../utils/dates';
 
 export default function SalesReportPage() {
-  const today = new Date();
-  const monthAgo = new Date();
-  monthAgo.setDate(monthAgo.getDate() - 30);
-
-  const [from, setFrom] = useState(toISODate(monthAgo));
-  const [to, setTo] = useState(toISODate(today));
+  const [from, setFrom] = useState(daysAgoMX(30));
+  const [to, setTo] = useState(todayMX());
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [topProducts, setTopProducts] = useState([]);
-  const [fundSummary, setFundSummary] = useState(null); // 👈 esto era lo que faltaba
+  const [fundSummary, setFundSummary] = useState(null);
+
   const load = async () => {
     setLoading(true);
+    setError('');
     try {
       const [dailyData, topData, fundData] = await Promise.all([
         getSalesDaily(1, from, to),
@@ -29,6 +24,8 @@ export default function SalesReportPage() {
       setRows(dailyData);
       setTopProducts(topData);
       setFundSummary(fundData);
+    } catch (e) {
+      setError(e.message || 'No se pudo cargar el reporte');
     } finally {
       setLoading(false);
     }
@@ -39,16 +36,17 @@ export default function SalesReportPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const totalPeriodo = rows.reduce((a, r) => a + r.total, 0);
-  const totalTienda = rows.reduce((a, r) => a + r.total_tienda, 0);
-  const totalCafe = rows.reduce((a, r) => a + r.total_cafe, 0);
-  const maxTotal = Math.max(...rows.map((r) => r.total), 1);
+  const sum = (k) => rows.reduce((a, r) => a + Number(r[k] || 0), 0);
+  const totalPeriodo = sum('total');
+  const totalTienda = sum('total_tienda');
+  const totalCafe = sum('total_cafe');
+  const maxTotal = Math.max(...rows.map((r) => Number(r.total)), 1);
 
   return (
     <Layout>
       <h1 className="page-title">Reporte de ventas</h1>
 
-      <div className="card" style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
+      <div className="card" style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
         <div className="form-row" style={{ marginBottom: 0 }}>
           <label>Desde</label>
           <input className="input" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
@@ -59,6 +57,8 @@ export default function SalesReportPage() {
         </div>
         <button className="btn btn-primary" onClick={load}>Filtrar</button>
       </div>
+
+      {error && <p style={{ color: 'var(--danger)' }}>⚠️ {error}</p>}
 
       <div className="card-grid">
         <div className="stat-card">
@@ -78,28 +78,22 @@ export default function SalesReportPage() {
       <div className="card-grid">
         <div className="stat-card">
           <div className="stat-label">Descuentos otorgados</div>
-          <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
-            ${rows.reduce((a, r) => a + r.total_descuentos, 0).toFixed(2)}
-          </div>
+          <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>${sum('total_descuentos').toFixed(2)}</div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Cancelaciones</div>
           <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
-            ${rows.reduce((a, r) => a + r.total_cancelaciones, 0).toFixed(2)}
-            <span style={{ fontSize: '0.7rem', display: 'block' }}>
-              {rows.reduce((a, r) => a + r.cancelled_count, 0)} ventas
-            </span>
+            ${sum('total_cancelaciones').toFixed(2)}
+            <span style={{ fontSize: '0.7rem', display: 'block' }}>{sum('cancelled_count')} ventas</span>
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Devoluciones parciales</div>
-          <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>
-            ${rows.reduce((a, r) => a + r.total_devoluciones, 0).toFixed(2)}
-          </div>
+          <div className="stat-value" style={{ color: 'var(--danger, #c0392b)' }}>${sum('total_devoluciones').toFixed(2)}</div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Fondo de caja aportado</div>
-          <div className="stat-value">${fundSummary?.total_fondo?.toFixed(2) ?? '0.00'}</div>
+          <div className="stat-value">${Number(fundSummary?.total_fondo ?? 0).toFixed(2)}</div>
           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
             en {fundSummary?.cuts_count ?? 0} corte(s)
           </div>
@@ -129,24 +123,18 @@ export default function SalesReportPage() {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.day}>
-                  <td>{new Date(r.day).toLocaleDateString('es-MX', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                <tr key={String(r.day)}>
+                  <td>{fmtDay(r.day)}</td>
                   <td>{r.sale_count}</td>
-                  <td>${r.total_tienda.toFixed(2)}</td>
-                  <td>${r.total_cafe.toFixed(2)}</td>
-                  <td style={{ color: 'var(--danger, #c0392b)' }}>${r.total_descuentos.toFixed(2)}</td>
-                  <td style={{ color: 'var(--danger, #c0392b)' }}>${r.total_cancelaciones.toFixed(2)}</td>
-                  <td style={{ color: 'var(--danger, #c0392b)' }}>${r.total_devoluciones.toFixed(2)}</td>
-                  <td style={{ fontWeight: 'bold' }}>${r.total.toFixed(2)}</td>
+                  <td>${Number(r.total_tienda).toFixed(2)}</td>
+                  <td>${Number(r.total_cafe).toFixed(2)}</td>
+                  <td style={{ color: 'var(--danger, #c0392b)' }}>${Number(r.total_descuentos).toFixed(2)}</td>
+                  <td style={{ color: 'var(--danger, #c0392b)' }}>${Number(r.total_cancelaciones).toFixed(2)}</td>
+                  <td style={{ color: 'var(--danger, #c0392b)' }}>${Number(r.total_devoluciones).toFixed(2)}</td>
+                  <td style={{ fontWeight: 'bold' }}>${Number(r.total).toFixed(2)}</td>
                   <td>
                     <div style={{ background: 'var(--gray-light)', borderRadius: 4, height: 10, overflow: 'hidden' }}>
-                      <div
-                        style={{
-                          width: `${(r.total / maxTotal) * 100}%`,
-                          background: 'var(--primary)',
-                          height: '100%',
-                        }}
-                      />
+                      <div style={{ width: `${(Number(r.total) / maxTotal) * 100}%`, background: 'var(--primary)', height: '100%' }} />
                     </div>
                   </td>
                 </tr>
@@ -175,7 +163,7 @@ export default function SalesReportPage() {
             </thead>
             <tbody>
               {topProducts.map((p, idx) => {
-                const maxQty = Math.max(...topProducts.map((x) => x.total_qty), 1);
+                const maxQty = Math.max(...topProducts.map((x) => Number(x.total_qty)), 1);
                 return (
                   <tr key={p.cafe_product_id}>
                     <td>
@@ -186,16 +174,10 @@ export default function SalesReportPage() {
                     </td>
                     <td>{p.total_qty}</td>
                     <td>{p.times_sold}</td>
-                    <td style={{ textAlign: 'right', fontWeight: 'bold' }}>${p.total_revenue.toFixed(2)}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 'bold' }}>${Number(p.total_revenue).toFixed(2)}</td>
                     <td>
                       <div style={{ background: 'var(--gray-light)', borderRadius: 4, height: 10, overflow: 'hidden' }}>
-                        <div
-                          style={{
-                            width: `${(p.total_qty / maxQty) * 100}%`,
-                            background: 'var(--cafe)',
-                            height: '100%',
-                          }}
-                        />
+                        <div style={{ width: `${(Number(p.total_qty) / maxQty) * 100}%`, background: 'var(--cafe)', height: '100%' }} />
                       </div>
                     </td>
                   </tr>
