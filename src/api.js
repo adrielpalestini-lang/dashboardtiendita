@@ -30,6 +30,32 @@ export const getCafeTopProducts = (warehouseId = 1, from, to) => {
 };
 
 
+export async function getUsersList() {
+  const res = await fetch(`${API_URL}/users/list`);
+  if (!res.ok) throw new Error('Error al cargar cajeros');
+  return res.json();
+}
+
+export async function getCartRemovals(warehouseId, { from, to, userId, productType, page = 1, limit = 20 } = {}) {
+  const params = new URLSearchParams({ warehouse_id: warehouseId, page, limit });
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  if (userId) params.set('user_id', userId);
+  if (productType) params.set('product_type', productType);
+  const res = await fetch(`${API_URL}/reports/cart-removals?${params}`);
+  if (!res.ok) throw new Error('Error al cargar remociones');
+  return res.json();
+}
+
+export async function getCartRemovalsByCashier(warehouseId, from, to) {
+  const params = new URLSearchParams({ warehouse_id: warehouseId });
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  const res = await fetch(`${API_URL}/reports/cart-removals/by-cashier?${params}`);
+  if (!res.ok) throw new Error('Error al cargar ranking de cajeros');
+  return res.json();
+}
+
 // ---- Auth ----
 export const login = (email, password) =>
   apiFetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
